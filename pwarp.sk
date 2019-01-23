@@ -28,28 +28,28 @@ function displayHelp(receiver: player):
 command /pwarp [<text>] [<text>]:
         aliases: /pwarps
         trigger:
-                if arg 1 is "del":
-                        if arg 2 is not set:
-                                if player has permission "pwarp.del":
-                                        if {pwarp.locations::%player%} is not set:
-                                                message "&6&l[%{pwarp.name}%&6]&r <red>You have no player warp set!"
+                if player has permission "pwarp.use":
+                        if arg 1 is "del":
+                                if arg 2 is not set:
+                                        if player has permission "pwarp.del":
+                                                if {pwarp.locations::%player%} is not set:
+                                                        message "&6&l[%{pwarp.name}%&6]&r <red>You have no player warp set."
+                                                        stop trigger
+                                                message "&6&l[%{pwarp.name}%&6]&r Your player warp has been removed."
+                                                clear {pwarp.locations::%player%}
                                                 stop trigger
-                                        message "&6&l[%{pwarp.name}%&6]&r Your player warp has been removed!"
-                                        clear {pwarp.locations::%player%}
+                                        message "&6&l[%{pwarp.name}%&6]&r &e<red>Only merchant rank or higher can use that command."
                                         stop trigger
-                                message "&6&l[%{pwarp.name}%&6]&r &e<red>Only merchant rank or higher can use that command!"
-                                stop trigger
-                        if player has permission "pwarp.admin":
-                                if {pwarp.locations::%arg-2%} is not set:
-                                        message "&6&l[%{pwarp.name}%&6]&r <red>%arg-2% has no player warp set!"
+                                if player has permission "pwarp.admin":
+                                        if {pwarp.locations::%arg-2%} is not set:
+                                                message "&6&l[%{pwarp.name}%&6]&r <red>%arg-2% has no player warp set."
+                                                stop trigger
+                                        message "&6&l[%{pwarp.name}%&6]&r &l%arg-2%&e's player warp has been removed."
+                                        clear {pwarp.locations::%arg-2%}
                                         stop trigger
-                                message "&6&l[%{pwarp.name}%&6]&r &l%arg-2%&e's player warp has been removed!"
-                                clear {pwarp.locations::%arg-2%}
+                                message "&6&l[%{pwarp.name}%&6]&r &e<red>You do not have access to that command."
                                 stop trigger
-                        message "&6&l[%{pwarp.name}%&6]&r &e<red>You have no permission to use that command!"
-                        stop trigger
-                if arg 1 is "list":
-                        if player has permission "pwarp.use":
+                        if arg 1 is "list":
                                 open chest with 6 row named "%{pwarp.name}%" to player
                                 set {_pwarp.count} to 0
                                 loop {pwarp.locations::*}:
@@ -58,56 +58,63 @@ command /pwarp [<text>] [<text>]:
                                                 add 1 to {_pwarp.count}
                                 stop trigger
                                 #TO DO: pagination
-                        message "&6&l[%{pwarp.name}%&6]&r &e<red>You have no permission to use that command!"
-                        stop trigger
-                if arg 1 is "help":
-                        displayHelp(player)
-                        stop trigger
-                # if arg 1 is "list":
-                #         if player has permission "pwarp.use":
-                #                 set {_pwarp.count} to 0
-                #                 loop {pwarp.locations::*}:
-                #                         if {pwarp.locations::%loop-index%} is set:
-                #                                 add 1 to {_pwarp.count}
-                #                                 add "%loop-index%" to {_pwarp.list::*}
-                #                 if {_pwarp.count} is more than 0:
-                #                         message "&6&l[%{pwarp.name}%&6]&r &e%{_pwarp.list::*}%"
-                #                 else:
-                #                         message "&6&l[%{pwarp.name}%&6]&r &eThere are no player warps found."
-                #                 stop trigger
-                #         message "&6&l[%{pwarp.name}%&6]&r &e<red>You have no permission to use that command!"
-                #         stop trigger
-                if arg 1 is "reload":
-                        if player has permission "pwarp.admin":
-                                execute console command "/skript reload pwarp.sk"
-                                send "&6&l[%{pwarp.name}%&6]&e Successfully reloaded!"
+                        if arg 1 is "help":
+                                message "&e&l----------[%{pwarp.name}%&e]----------"
+                                message " "
+                                message "&c&lVersion of plugin: &6%{pwarp.version}%"
+                                message " "
+                                message "&2Custom made Skript by KeirLoire"
+                                message "&2if you have any suggestions or have problems, dm me"
+                                message "&e&l----------&6[&3USER&6]&e----------"
+                                message "&c/pwarp <player> &e- Teleport to a player warp."
+                                message "&c/pwarp list &e- Displays list of player warps."
+                                message "&c/pwarp set &e- Set your warp at your location."
+                                message "&c/pwarp del &e- Delete your warp."
+                                message "&e&l----------&6[&3ADMIN&6]&e----------"
+                                message "&c/pwarp set <player> &e- Set other's player warp."
+                                message "&c/pwarp del <player> &e- Delete other's player warp."
                                 stop trigger
-                        message "&6&l[%{pwarp.name}%&6]&r &e<red>You have no permission to use that command!"
-                        stop trigger
-                if arg 1 is "set":
-                        if arg 2 is set:
+                        # if arg 1 is "list":
+                                # set {_pwarp.count} to 0
+                                # loop {pwarp.locations::*}:
+                                #         if {pwarp.locations::%loop-index%} is set:
+                                #                 add 1 to {_pwarp.count}
+                                #                 add "%loop-index%" to {_pwarp.list::*}
+                                # if {_pwarp.count} is more than 0:
+                                #         message "&6&l[%{pwarp.name}%&6]&r &e%{_pwarp.list::*}%"
+                                # else:
+                                #         message "&6&l[%{pwarp.name}%&6]&r &eThere are no player warps found."
+                                # stop trigger
+                        if arg 1 is "reload":
                                 if player has permission "pwarp.admin":
-                                        message "&6&l[%{pwarp.name}%&6]&r &e%arg-2%'s player warp has been set!"
-                                        set {pwarp.locations::%arg-2%} to location of player
+                                        execute console command "/skript reload pwarp.sk"
+                                        message "&6&l[%{pwarp.name}%&6]&e Successfully reloaded."
                                         stop trigger
-                        if player has permission "pwarp.set":
-                                if player has permission "essentials.fly":
-                                        message "&6&l[%{pwarp.name}%&6]&r &eYour player warp has been set!"
-                                        set {pwarp.locations::%player%} to location of player 
-                                        stop trigger
-                                if player is flying:
-                                        message "&6&l[%{pwarp.name}%&6]&r &cYou cannot set your player warp while flying!"
-                                        stop trigger
-                                if player is not flying:
-                                        message "&6&l[%{pwarp.name}%&6]&r &eYour player warp has been set!"
-                                        set {pwarp.locations::%player%} to location of player
-                                        stop trigger
-                        message "&6&l[%{pwarp.name}%&6]&r &e<red>Only merchant rank or higher can use that command!"
-                        stop trigger
-                if arg 1 is set:
-                        if player has permission "pwarp.use":
+                                message "&6&l[%{pwarp.name}%&6]&r &e<red>You do not have access to that command."
+                                stop trigger
+                        if arg 1 is "set":
+                                if arg 2 is set:
+                                        if player has permission "pwarp.admin":
+                                                message "&6&l[%{pwarp.name}%&6]&r &e%arg-2%'s player warp has been set."
+                                                set {pwarp.locations::%arg-2%} to location of player
+                                                stop trigger
+                                if player has permission "pwarp.set":
+                                        if player has permission "essentials.fly":
+                                                message "&6&l[%{pwarp.name}%&6]&r &eYour player warp has been set."
+                                                set {pwarp.locations::%player%} to location of player 
+                                                stop trigger
+                                        if player is flying:
+                                                message "&6&l[%{pwarp.name}%&6]&r &cYou cannot set your player warp while flying."
+                                                stop trigger
+                                        if player is not flying:
+                                                message "&6&l[%{pwarp.name}%&6]&r &eYour player warp has been set."
+                                                set {pwarp.locations::%player%} to location of player
+                                                stop trigger
+                                message "&6&l[%{pwarp.name}%&6]&r &e<red>Only merchant rank or higher can use that command."
+                                stop trigger
+                        if arg 1 is set:
                                 if {pwarp.locations::%arg-1%} is not set:
-                                        message "&6&l[%{pwarp.name}%&6]&r <red>%arg-1% has no player warp set!"
+                                        message "&6&l[%{pwarp.name}%&6]&r <red>%arg-1% has no player warp set."
                                         stop trigger
                                 if player has permission "pwarp.admin":
                                         teleport player to {pwarp.locations::%arg-1%}
@@ -123,7 +130,8 @@ command /pwarp [<text>] [<text>]:
                                 teleport player to {pwarp.locations::%arg-1%}
                                 message "&eTeleportation commecing..."
                                 stop trigger
-                        message "&6&l[%{pwarp.name}%&6]&r &e<red>You have no permission to use that command!"
-                        stop trigger
-                displayHelp(player)
+                        if arg 1 is not set:
+                                player command "/pwarp help"
+                                stop trigger
+                message "&6&l[%{pwarp.name}%&6]&r &e<red>You do not have access to that command."
                 stop trigger
