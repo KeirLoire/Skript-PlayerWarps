@@ -3,23 +3,8 @@ options:
     name: Player Warps
     author: KeirLoire
     version: 1.0.1.0
-
-function displayHelp(receiver: player):
-        send "&e&l----------[%{pwarp.name}%&e]----------" to {_receiver}
-        send " " to {_receiver}
-        send "&c&lVersion of plugin: &6%{pwarp.version}%" to {_receiver}
-        send " " to {_receiver}
-        send "&2Custom made Skript by KeirLoire" to {_receiver}
-        send "&2if you have any suggestions or have problems, dm me" to {_receiver}
-        send "&e&l----------&6[&3USER&6]&e----------" to {_receiver}
-        send "&c/pwarp <player> &e- Teleport to a player warp." to {_receiver}
-        send "&c/pwarp list &e- Displays list of player warps." to {_receiver}
-        send "&c/pwarp set &e- Set your warp at your location." to {_receiver}
-        send "&c/pwarp del &e- Delete your warp." to {_receiver}
-        if {_receiver} has permission "pwarp.admin":
-                send "&e&l----------&6[&3ADMIN&6]&e----------" to {_receiver}
-                send "&c/pwarp set <player> &e- Set other's player warp." to {_receiver}
-                send "&c/pwarp del <player> &e- Delete other's player warp." to {_receiver}
+    prefix_warning: &4&l[&c&l!&4&l]
+    prefix_info: &6&l[&e&l!&6&l]
 
 command /pwarp [<text>] [<text>]:
     usage: /pwarp help
@@ -30,19 +15,19 @@ command /pwarp [<text>] [<text>]:
                 if arg-2 is not set:
                     if player has permission "pwarp.del":
                         if {pwarp.locations::%player%} is not set:
-                            message "&4You have no player warp set."
+                            message "{@prefix_info} &4You have no player warp set."
                         else:
-                            message "&6Your player warp has been removed."
+                            message "{@prefix_info} &6Your player warp has been removed."
                             clear {pwarp.locations::%player%}
-                    message "&4Only merchant rank or higher can use that command."
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
                 else if player has permission "pwarp.admin":
                     if {pwarp.locations::%arg-2%} is not set:
-                        message "&4%arg-2% has no player warp set."
+                        message "{@prefix_info} &4%arg-2% has no player warp set."
                     else:
-                        message "&6%arg-2%'s player warp has been removed."
+                        message "{@prefix_info} &6%arg-2%'s player warp has been removed."
                         clear {pwarp.locations::%arg-2%}
                 else:
-                    message "&4You do not have access to that command."
+                    message "{@prefix_warning} &4You do not have access to that command."
             else if arg-1 is "help":
                 message "&6&l----------[{@prefix}{@name}&6]----------"
                 message " "
@@ -54,6 +39,10 @@ command /pwarp [<text>] [<text>]:
                 message "&c/pwarp list &6- Displays list of player warps."
                 message "&c/pwarp set &6- Set your warp at your location."
                 message "&c/pwarp del &6- Delete your warp."
+                message "&c/pwarp title &6- Sets the title of your player warp."
+                message "&c/pwarp title clear &6- Removes the title of your player."
+                message "&c/pwarp skin &6- Sets the skin of your player warp."
+                message "&c/pwarp skin clear &6- Removes the skin of your player warp."
                 message "&6&l----------&6[&3ADMIN&6]&6----------"
                 message "&c/pwarp set <player> &6- Set other's player warp."
                 message "&c/pwarp del <player> &6- Delete other's player warp."
@@ -71,13 +60,44 @@ command /pwarp [<text>] [<text>]:
                     if {_skip} is more than 45:
                         add -1 to {_skip}
                     else:
-                        set {_player} to loop-index parsed as an offline player
-                        make a gui slot {_slot} of player with {_player}'s skull named loop-index to close then execute player command "/pwarp %loop-index%"
+                        if {pwarp.skins::%loop-index%} is set:
+                            set {_player} to {pwarp.skins::%loop-index%} parsed as an offline player
+                        else:
+                            set {_player} to loop-index parsed as an offline player
+                        if {pwarp.titles::%loop-index%} is set:
+                            set {_title} to {pwarp.titles::%loop-index%}
+                        else:
+                            set {_title} to loop-index
+                        make a gui slot {_slot} of player with {_player}'s skull named {_title} with lore "&7by %loop-index%" to close then execute player command "/pwarp %loop-index%"
                         add 1 to {_slot}
                 if {_skip} is more than 45:
                     make a gui slot 52 of player with gray_stained_glass_pane named "&7Next Page" to close then execute player command "/pwarp list %{_page} + 1%"
                 if (arg-2 parsed as integer) is more than 1:
                     make a gui slot 46 of player with gray_stained_glass_pane named "&7Previous Page" to close then execute player command "/pwarp list %{_page} - 1%"
+            else if arg-1 is "title":
+                if player has permission "pwarp.set":
+                    if arg-2 is "clear":
+                        clear {pwarp.titles::%player%}
+                        message "{@prefix_info} &6The title of your player warp has been removed."
+                    else if arg-2 is set:
+                        set {pwarp.titles::%player%} to colored "%arg-2%"
+                        message "{@prefix_info} &6The title of your player warp has been set to %arg-2%."
+                    else:
+                        message "{@prefix_warning} &4Please specify the title of your warp."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+            else if arg-1 is "skin":
+                if player has permission "pwarp.set":
+                    if arg-2 is "clear":
+                        clear {pwarp.skins::%player%}
+                        message "{@prefix_info} &6The skin of your player warp has been removed."
+                    else if arg-2 is set:
+                        set {pwarp.skins::%player%} to colored "%arg-2%"
+                        message "{@prefix_info} &6The skin of your player warp has been set to %arg-2%."
+                    else:
+                        message "{@prefix_warning} &4Please specify the skin of your warp."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
             else if arg-1 is "set":
                 if arg-2 is set:
                     if player has permission "pwarp.admin":
@@ -85,33 +105,31 @@ command /pwarp [<text>] [<text>]:
                         set {pwarp.locations::%arg-2%} to location of player
                 else if player has permission "pwarp.set":
                     if player has permission "essentials.fly":
-                        message "&6Your player warp has been set."
+                        message "{@prefix_info} &6Your player warp has been set."
                         set {pwarp.locations::%player%} to location of player
                     else if player is flying:
-                        message "&4You cannot set your player warp while flying."
+                        message "{@prefix_warning} &4You cannot set your player warp while flying."
                     else if player is not flying:
-                        message "&6Your player warp has been set."
+                        message "{@prefix_info} &6Your player warp has been set."
                         set {pwarp.locations::%player%} to location of player
                 else:
-                    message "&4Only merchant rank or higher can use that command."
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
             else if arg-1 is set:
                 if {pwarp.locations::%arg-1%} is not set:
-                    message "&4%arg-1% has no player warp set."
-                else if player has permission "pwarp.admin":
-                    teleport player to {pwarp.locations::%arg-1%}
-                    message "&6Teleportation commecing..."
+                    message "{@prefix_info} &6%arg-1% has no player warp set."
                     stop trigger
-                set {_location} to location of block below player
-                message "&6Teleportation will commence in &c3 seconds&6. Don't move."
-                loop 3 times:
-                    wait 1 seconds
-                    if {_location} is not location of block below player:
-                        message "&4Pending teleportation request cancelled."
-                        stop trigger
+                else if player don't have permission "pwarp.admin":
+                    set {_location} to location of block below player
+                    message "{@prefix_info} &6Teleportation will commence in &c3 seconds&6. Don't move."
+                    loop 3 times:
+                        wait 1 seconds
+                        if {_location} is not location of block below player:
+                            message "{@prefix_warning} &4Pending teleportation request cancelled."
+                            stop trigger
                 teleport player to {pwarp.locations::%arg-1%}
-                message "&6Teleportation commecing..."
+                message "{@prefix_info} &6Teleportation commecing..."
             else if arg-1 is not set:
                 player command "/pwarp list"
         else:
-            message "&4You do not have access to that command."
+            message "{@prefix_warning} &4You do not have access to that command."
             stop trigger
