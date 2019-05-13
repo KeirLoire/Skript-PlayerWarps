@@ -2,7 +2,7 @@ options:
     prefix: &c
     name: Player Warps
     author: KeirLoire
-    version: 1.0.1.0
+    version: 1.0.2.0
     prefix_warning: &4&l[&c&l!&4&l]
     prefix_info: &6&l[&e&l!&6&l]
 
@@ -19,13 +19,24 @@ command /pwarp [<text>] [<text>]:
                         else:
                             message "{@prefix_info} &6Your player warp has been removed."
                             clear {pwarp.locations::%player%}
-                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+                            clear {pwarp.trust::%player%::*}
+                            clear {pwarp.skins::%player%}
+                            clear {pwarp.titles::%player%}
+                            clear {pwarp.whitelist::%player%}
+                            clear {pwarp.blacklist::%player%::*}
+                    else:
+                        message "{@prefix_warning} &4Only merchant rank or higher can use that command."
                 else if player has permission "pwarp.admin":
                     if {pwarp.locations::%arg-2%} is not set:
                         message "{@prefix_info} &4%arg-2% has no player warp set."
                     else:
                         message "{@prefix_info} &6%arg-2%'s player warp has been removed."
                         clear {pwarp.locations::%arg-2%}
+                        clear {pwarp.trust::%arg-2%::*}
+                        clear {pwarp.skins::%arg-2%}
+                        clear {pwarp.titles::%arg-2%}
+                        clear {pwarp.whitelist::%arg-2%}
+                        clear {pwarp.blacklist::%arg-2%::*}
                 else:
                     message "{@prefix_warning} &4You do not have access to that command."
             else if arg-1 is "help":
@@ -39,10 +50,15 @@ command /pwarp [<text>] [<text>]:
                 message "&c/pwarp list &6- Displays list of player warps."
                 message "&c/pwarp set &6- Set your warp at your location."
                 message "&c/pwarp del &6- Delete your warp."
-                message "&c/pwarp title &6- Sets the title of your player warp."
-                message "&c/pwarp title clear &6- Removes the title of your player."
-                message "&c/pwarp skin &6- Sets the skin of your player warp."
+                message "&c/pwarp title <player>&6- Sets the title of your player warp."
+                message "&c/pwarp title clear &6- Removes the title of your player warp."
+                message "&c/pwarp skin <player>&6- Sets the skin of your player warp."
                 message "&c/pwarp skin clear &6- Removes the skin of your player warp."
+                message "&c/pwarp block <player>&6- Blacklists the player."
+                message "&c/pwarp unblock <player>&6- Removes the player from blacklist."
+                message "&c/pwarp whitelist &6- Activates whitelist mode."
+                message "&c/pwarp trust <player> &6- Adds the player from your whitelist."
+                message "&c/pwarp untrust <player>&6- Removes the player from your whitelist"
                 message "&6&l----------&6[&3ADMIN&6]&6----------"
                 message "&c/pwarp set <player> &6- Set other's player warp."
                 message "&c/pwarp del <player> &6- Delete other's player warp."
@@ -65,9 +81,9 @@ command /pwarp [<text>] [<text>]:
                         else:
                             set {_player} to loop-index parsed as an offline player
                         if {pwarp.titles::%loop-index%} is set:
-                            set {_title} to {pwarp.titles::%loop-index%}
+                            set {_title} to "&f%{pwarp.titles::%loop-index%}%"
                         else:
-                            set {_title} to loop-index
+                            set {_title} to "&f%loop-index%"
                         make a gui slot {_slot} of player with {_player}'s skull named {_title} with lore "&7by %loop-index%" to close then execute player command "/pwarp %loop-index%"
                         add 1 to {_slot}
                 if {_skip} is more than 45:
@@ -80,7 +96,7 @@ command /pwarp [<text>] [<text>]:
                         clear {pwarp.titles::%player%}
                         message "{@prefix_info} &6The title of your player warp has been removed."
                     else if arg-2 is set:
-                        set {pwarp.titles::%player%} to colored "%arg-2%"
+                        set {pwarp.titles::%player%} to colored arg-2
                         message "{@prefix_info} &6The title of your player warp has been set to %arg-2%."
                     else:
                         message "{@prefix_warning} &4Please specify the title of your warp."
@@ -92,7 +108,7 @@ command /pwarp [<text>] [<text>]:
                         clear {pwarp.skins::%player%}
                         message "{@prefix_info} &6The skin of your player warp has been removed."
                     else if arg-2 is set:
-                        set {pwarp.skins::%player%} to colored "%arg-2%"
+                        set {pwarp.skins::%player%} to colored arg-2
                         message "{@prefix_info} &6The skin of your player warp has been set to %arg-2%."
                     else:
                         message "{@prefix_warning} &4Please specify the skin of your warp."
@@ -114,11 +130,82 @@ command /pwarp [<text>] [<text>]:
                         set {pwarp.locations::%player%} to location of player
                 else:
                     message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+            else if arg-1 is "block":
+                if player has permission "pwarp.set":
+                    if arg-2 is set:
+                        set {pwarp.blacklist::%player%::%arg-2%} to arg-2
+                        message "{@prefix_info} &6%arg-2% has been added to blacklist."
+                    else:
+                        message "{@prefix_warning} &4Please specify the name of the player."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+            else if arg-1 is "unblock":
+                if player has permission "pwarp.set":
+                    if arg-2 is set:
+                        clear {pwarp.blacklist::%player%::%arg-2%}
+                        message "{@prefix_info} &6%arg-2% has been removed from your blacklist."
+                    else:
+                        message "{@prefix_warning} &4Please specify the name of the player."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+            else if arg-1 is "blacklist":
+                if player has permission "pwarp.set":
+                    if {pwarp.blacklist::%player%::*} is set:
+                        message "{@prefix_info} &6%{pwarp.blacklist::%player%::*}%"
+                    else:
+                        message "{@prefix_info} &6You have don't have blacklisted players."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+            else if arg-1 is "whitelist":
+                if player has permission "pwarp.set":
+                    if {pwarp.whitelist::%player%} is set:
+                        clear {pwarp.whitelist::%player%}
+                        message "{@prefix_info} &6Player Warp whitelist mode deactivated."
+                    else:
+                        set {pwarp.whitelist::%player%} to true
+                        message "{@prefix_info} &6Player Warp whitelist mode activated."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+            else if arg-1 is "trust":
+                if player has permission "pwarp.set":
+                    if arg-2 is set:
+                        set {pwarp.trust::%player%::%arg-2%} to arg-2
+                        message "{@prefix_info} &6%arg-2% has been added to trust list."
+                    else:
+                        message "{@prefix_warning} &4Please specify the name of the player."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+            else if arg-1 is "untrust":
+                if player has permission "pwarp.set":
+                    if arg-2 is set:
+                        clear {pwarp.trust::%player%::%arg-2%}
+                        message "{@prefix_info} &6%arg-2% has been removed from trust list."
+                    else:
+                        message "{@prefix_warning} &4Please specify the name of the player."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
+            else if arg-1 is "trustlist":
+                if player has permission "pwarp.set":
+                    if {pwarp.trust::%player%::*} is set:
+                        message "{@prefix_info} &6%{pwarp.trust::%player%::*}%"
+                    else:
+                        message "{@prefix_info} &6You have don't have trusted players."
+                else:
+                    message "{@prefix_warning} &4Only merchant rank or higher can use that command."
             else if arg-1 is set:
                 if {pwarp.locations::%arg-1%} is not set:
                     message "{@prefix_info} &6%arg-1% has no player warp set."
                     stop trigger
                 else if player don't have permission "pwarp.admin":
+                    if arg-1 is not player:
+                        if {pwarp.whitelist::%arg-1%} is set:
+                            if {pwarp.trust::%arg-1%::%player%} is not set:
+                                message "{@prefix_warning} &4Player warp has whitelist mode."
+                                message "{@prefix_warning} &4Please contact the owner to add you to his trust list."
+                                stop trigger
+                        if {pwarp.blacklist::%arg-1%::%player%} is set:
+                            message "{@prefix_warning} &4Player has blocked you from its player warp."
+                            stop trigger
                     set {_location} to location of block below player
                     message "{@prefix_info} &6Teleportation will commence in &c3 seconds&6. Don't move."
                     loop 3 times:
